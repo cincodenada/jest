@@ -446,6 +446,35 @@ function _replaceMatchedToAsymmetricMatcher(
     log('ExpcetedCycles');
     return {replacedExpected, replacedReceived};
   }
+  log('Checking top-level');
+  if (isAsymmetricMatcher(replacedExpected)) {
+    log(
+      'Expected is matcher, replacing recieved with expected',
+      replacedExpected,
+    );
+    if (replacedExpected.asymmetricMatch(replacedReceived)) {
+      return {
+        replacedExpected,
+        replacedReceived: replacedExpected,
+      };
+    } else {
+      replacedExpected = replacedExpected.sample;
+    }
+  }
+  if (isAsymmetricMatcher(replacedReceived)) {
+    log(
+      'Received is matcher, replacing expected with received',
+      replacedReceived,
+    );
+    if (replacedReceived.asymmetricMatch(replacedExpected)) {
+      return {
+        replacedExpected: replacedReceived,
+        replacedReceived,
+      };
+    } else {
+      replacedReceived = replacedReceived.sample;
+    }
+  }
 
   expectedCycles.push(replacedExpected);
   receivedCycles.push(replacedReceived);
@@ -465,6 +494,8 @@ function _replaceMatchedToAsymmetricMatcher(
       );
       if (expectedValue.asymmetricMatch(receivedValue)) {
         receivedReplaceable.set(key, expectedValue);
+      } else if (expectedValue.sample) {
+        expectedValue = expectedValue.sample;
       }
     } else if (isAsymmetricMatcher(receivedValue)) {
       log(
@@ -473,8 +504,12 @@ function _replaceMatchedToAsymmetricMatcher(
       );
       if (receivedValue.asymmetricMatch(expectedValue)) {
         expectedReplaceable.set(key, receivedValue);
+      } else if (receivedValue.sample) {
+        receivedValue = receivedValue.sample;
       }
-    } else if (Replaceable.isReplaceable(expectedValue, receivedValue)) {
+    }
+
+    if (Replaceable.isReplaceable(expectedValue, receivedValue)) {
       const replaced = _replaceMatchedToAsymmetricMatcher(
         expectedValue,
         receivedValue,
@@ -497,6 +532,10 @@ type AsymmetricMatcher = {
 };
 
 function isAsymmetricMatcher(data: any): data is AsymmetricMatcher {
+  if (data && data.$$typeof === Symbol.for('jest.asymmetricMatcher')) {
+    log('Asym!', data);
+    return true;
+  }
   const type = getType(data);
   log('isAsym', data, type);
   return type === 'object' && typeof data.asymmetricMatch === 'function';

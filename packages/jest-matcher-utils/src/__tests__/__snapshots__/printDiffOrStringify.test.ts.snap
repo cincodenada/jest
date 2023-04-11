@@ -112,6 +112,19 @@ exports[`printDiffOrStringify asymmetricMatcher minimal test 1`] = `
 <d>  }</>
 `;
 
+exports[`printDiffOrStringify asymmetricMatcher nested matchers 1`] = `
+<g>- Expected  - 1</>
+<r>+ Received  + 1</>
+
+<d>  Object {</>
+<d>    "a": Array [</>
+<d>      equal5<>,</>
+<g>-     10,</>
+<r>+     7,</>
+<d>    ],</>
+<d>  }</>
+`;
+
 exports[`printDiffOrStringify asymmetricMatcher nested object 1`] = `
 <g>- Expected  - 1</>
 <r>+ Received  + 1</>

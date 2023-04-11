@@ -268,5 +268,29 @@ describe('printDiffOrStringify', () => {
       received.set('circular', received);
       expect(testDiffOrStringify(expected, received)).toMatchSnapshot();
     });
+
+    test('nested matchers', () => {
+      expect.extend({
+        equal5(received: unknown) {
+          if (received === 5)
+            return {
+              message: () => `expected ${received} not to be 5`,
+              pass: true,
+            };
+          return {
+            message: () => `expected ${received} to be 5`,
+            pass: false,
+          };
+        },
+      });
+      const expected = {
+        a: expect.arrayContaining([expect.equal5(), 10]),
+      };
+      const received = {
+        a: [5, 7],
+      };
+
+      expect(testDiffOrStringify(expected, received)).toMatchSnapshot();
+    });
   });
 });

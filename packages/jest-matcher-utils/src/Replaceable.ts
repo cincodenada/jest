@@ -5,6 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+function log(...args) {
+  if (process.env.DEBUG) {
+    console.log(...args);
+  }
+}
+
 import {getType} from 'jest-get-type';
 
 const supportTypes = ['map', 'array', 'object'];
@@ -29,8 +35,10 @@ export default class Replaceable {
   }
 
   static isReplaceable(obj1: unknown, obj2: unknown): boolean {
+    log("isReplaceable", obj1, obj2);
     const obj1Type = getType(obj1);
     const obj2Type = getType(obj2);
+    log(obj1Type, obj2Type)
     return obj1Type === obj2Type && supportTypes.includes(obj1Type);
   }
 

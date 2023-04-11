@@ -7,6 +7,12 @@
 
 /* eslint-disable local/ban-types-eventually */
 
+function log(...args) {
+  if (process.env.DEBUG) {
+    console.log(...args);
+  }
+}
+
 import chalk = require('chalk');
 import {
   DIFF_DELETE,
@@ -322,6 +328,7 @@ export const printDiffOrStringify = (
   receivedLabel: string,
   expand: boolean, // CLI options: true if `--expand` or false if `--no-expand`
 ): string => {
+  log('Diffing...');
   if (
     typeof expected === 'string' &&
     typeof received === 'string' &&
@@ -428,6 +435,7 @@ function _replaceMatchedToAsymmetricMatcher(
   receivedCycles: Array<unknown>,
 ) {
   if (!Replaceable.isReplaceable(replacedExpected, replacedReceived)) {
+    log('IsReplaceable, just replacing');
     return {replacedExpected, replacedReceived};
   }
 
@@ -435,6 +443,7 @@ function _replaceMatchedToAsymmetricMatcher(
     expectedCycles.includes(replacedExpected) ||
     receivedCycles.includes(replacedReceived)
   ) {
+    log('ExpcetedCycles');
     return {replacedExpected, replacedReceived};
   }
 
@@ -444,13 +453,24 @@ function _replaceMatchedToAsymmetricMatcher(
   const expectedReplaceable = new Replaceable(replacedExpected);
   const receivedReplaceable = new Replaceable(replacedReceived);
 
+  log('Expected/received', expectedReplaceable, receivedReplaceable);
+
   expectedReplaceable.forEach((expectedValue: unknown, key: unknown) => {
-    const receivedValue = receivedReplaceable.get(key);
+    log('Processing', expectedValue, key, receivedReplaceable);
+    let receivedValue = receivedReplaceable.get(key);
     if (isAsymmetricMatcher(expectedValue)) {
+      log(
+        'Expected is matcher, replacing recieved with expected',
+        expectedValue,
+      );
       if (expectedValue.asymmetricMatch(receivedValue)) {
         receivedReplaceable.set(key, expectedValue);
       }
     } else if (isAsymmetricMatcher(receivedValue)) {
+      log(
+        'Received is matcher, replacing expected with received',
+        receivedValue,
+      );
       if (receivedValue.asymmetricMatch(expectedValue)) {
         expectedReplaceable.set(key, receivedValue);
       }
@@ -478,6 +498,7 @@ type AsymmetricMatcher = {
 
 function isAsymmetricMatcher(data: any): data is AsymmetricMatcher {
   const type = getType(data);
+  log('isAsym', data, type);
   return type === 'object' && typeof data.asymmetricMatch === 'function';
 }
 

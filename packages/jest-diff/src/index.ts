@@ -5,6 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+function log(...args) {
+  if (process.env.DEBUG) {
+    console.log(...args);
+  }
+}
+
 import chalk = require('chalk');
 import {getType} from 'jest-get-type';
 import {
@@ -64,13 +70,13 @@ export function diff(a: any, b: any, options?: DiffOptions): string | null {
     return getCommonMessage(NO_DIFF_MESSAGE, options);
   }
 
-  console.log("Diff", a, b);
+  log('Diff', a, b);
 
   const aType = getType(a);
   let expectedType = aType;
   let omitDifference = false;
   if (aType === 'object' && typeof a.asymmetricMatch === 'function') {
-    console.log('Diffing matcher', a, b);
+    log('Diffing matcher', a, b);
     if (a.$$typeof !== Symbol.for('jest.asymmetricMatcher')) {
       // Do not know expected type of user-defined asymmetric matcher.
       return null;
